@@ -13,12 +13,12 @@ npm install @ralphy/algorithm
 
 ```ts
 // ES modules / TypeScript
-import { Bresenham, Perlin } from '@ralphy/algorithm';
+import { AStar, Bresenham, OrthonormalGrid, Perlin } from '@ralphy/algorithm';
 ```
 
 ```js
 // CommonJS
-const { Bresenham, Perlin } = require('@ralphy/algorithm');
+const { AStar, Bresenham, OrthonormalGrid, Perlin } = require('@ralphy/algorithm');
 ```
 
 ## Algorithms
@@ -68,6 +68,42 @@ const base = Array.from({ length: size }, () =>
 const noise = Perlin.generate(base, Perlin.computeOptimalOctaves(size));
 const colors = Perlin.colorize(noise, ['#004', '#08f', '#fe8', '#4a4', '#fff']);
 ```
+
+### `AStar`
+
+Finds the cheapest path in any graph implementing `IGraph<T>`, where `T` is whatever identifies
+a cell (coordinates, a name, ...). Links between cells are directed and have a status
+(open or closed) and a cost (non-negative). A* only follows open links.
+
+#### `AStar.findPath(graph, from, to): T[] | null`
+
+Returns the refs of the cells along the cheapest path, start and goal included (`[from]` when
+they are the same cell), or `null` when the goal can't be reached. Throws if the start or goal
+cell doesn't exist.
+
+The graph can provide `estimateCost(from, to)`, the heuristic that guides the search. It must
+never exceed the real cost of the cheapest path, or A* may return a more expensive path. Graphs
+without it are searched as with Dijkstra's algorithm: still the cheapest path, more cells
+explored.
+
+#### `OrthonormalGrid`
+
+A `width × height` grid of cells identified by `{ x, y }`, linked to their 4 neighbors, or 8
+with `diagonal` set. Links cost 1 across a side and √2 across a corner. `estimateCost` is the
+Manhattan distance (4 neighbors) or the octile distance (8 neighbors), which is the exact cost
+on a grid with no walls.
+
+```ts
+const grid = new OrthonormalGrid(10, 10, true);
+grid.setCellSolid({ x: 5, y: 5 }); // closes every link leading into the cell
+grid.closeLink({ x: 2, y: 0 }, { x: 1, y: 0 }, true); // one-way: (1,0) -> (2,0) only
+grid.getCell({ x: 3, y: 3 }).setLinkCost(grid.getCell({ x: 4, y: 3 }), 5); // costly step
+
+const path = AStar.findPath(grid, { x: 0, y: 0 }, { x: 9, y: 9 });
+```
+
+If you lower a link cost below the distance between its two cells (1, or √2 diagonally),
+`estimateCost` can overestimate and paths may no longer be the cheapest.
 
 ## Adding an algorithm
 

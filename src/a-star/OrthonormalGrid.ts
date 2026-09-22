@@ -176,13 +176,40 @@ export class OrthonormalGrid implements IGraph<XYCoords> {
         this._cells.set(OrthonormalGrid.key(ref), cell);
         return cell;
     }
+    /**
+     * Removes a cell and every link leading into it, so no path can go through it anymore.
+     * All cells are checked, not only the neighbors, since any cell can be linked to it.
+     * Does nothing if the cell doesn't exist.
+     */
     destroyCell(ref: XYCoords): void {
-        this._cells.delete(OrthonormalGrid.key(ref));
+        const key = OrthonormalGrid.key(ref);
+        const cell = this._cells.get(key);
+        if (!cell) {
+            return;
+        }
+        this._cells.delete(key);
+        this._cells.forEach((other) => other.destroyLink(cell));
+        cell.getLinks().forEach((link) => cell.destroyLink(link.cell));
     }
     existCell(ref: XYCoords): boolean {
         return this._cells.has(OrthonormalGrid.key(ref));
     }
+    /**
+     * Straight-line (euclidean) distance between two cells.
+     */
     getDistance(refFrom: XYCoords, refTo: XYCoords): number {
         return Math.hypot(refTo.x - refFrom.x, refTo.y - refFrom.y);
+    }
+
+    /**
+     * Cost of the cheapest path between two cells on a grid without closed links:
+     * octile distance when diagonal moves are allowed, Manhattan distance otherwise.
+     * Only valid as an A* heuristic while no link costs less than the distance between
+     * its two cells (1, or √2 diagonally).
+     */
+    estimateCost(refFrom: XYCoords, refTo: XYCoords): number {
+        const dx = Math.abs(refTo.x - refFrom.x);
+        const dy = Math.abs(refTo.y - refFrom.y);
+        return this.diagonal ? Math.max(dx, dy) + (Math.SQRT2 - 1) * Math.min(dx, dy) : dx + dy;
     }
 }

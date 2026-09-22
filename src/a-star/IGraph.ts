@@ -22,5 +22,13 @@ export interface IGraph<T> {
     createCell(ref: T): IGraphCell<T>;
     destroyCell(ref: T): void;
     existCell(ref: T): boolean;
-    getDistance(refFrom: T, refTo: T): number;
+    /**
+     * Estimates the cost of the cheapest path between two cells: the heuristic used by A*.
+     *
+     * The estimate must never exceed the real cost of the cheapest path, otherwise A* may
+     * return a path that is not the cheapest. The closer it is to the real cost, the fewer
+     * cells A* explores. Graphs without a notion of distance can leave this method out:
+     * A* then uses 0, which is always valid but explores more cells.
+     */
+    estimateCost?(refFrom: T, refTo: T): number;
 }

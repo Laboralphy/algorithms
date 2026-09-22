@@ -165,6 +165,48 @@ describe('OrthonormalGrid', () => {
         });
     });
 
+    describe('destroyCell', () => {
+        it('removes every link leading into the destroyed cell', () => {
+            const grid = new OrthonormalGrid(3, 3, true);
+            const center = grid.getCell({ x: 1, y: 1 });
+            const neighbors = grid.getNeighborCells(center.ref);
+            grid.destroyCell(center.ref);
+            neighbors.forEach((cell) => {
+                expect(() => cell.getLinkStatus(center)).toThrow(ReferenceError);
+                expect(cell.getLinks().map((link) => link.cell)).not.toContain(center);
+            });
+        });
+
+        it('removes links from cells that are not neighbors', () => {
+            const grid = new OrthonormalGrid(5, 5);
+            const far = grid.getCell({ x: 0, y: 0 });
+            const target = grid.getCell({ x: 4, y: 4 });
+            far.createLink(target, 1);
+            grid.destroyCell(target.ref);
+            expect(() => far.getLinkStatus(target)).toThrow(ReferenceError);
+        });
+
+        it('removes the links leaving the destroyed cell', () => {
+            const grid = new OrthonormalGrid(3, 3);
+            const center = grid.getCell({ x: 1, y: 1 });
+            grid.destroyCell(center.ref);
+            expect(center.getLinks()).toEqual([]);
+        });
+
+        it('leaves the other links untouched', () => {
+            const grid = new OrthonormalGrid(3, 3);
+            grid.destroyCell({ x: 1, y: 1 });
+            expect(linkedCoords(grid.getCell({ x: 0, y: 0 }), true)).toEqual(['0:1', '1:0']);
+            expect(linkedCoords(grid.getCell({ x: 1, y: 0 }), true)).toEqual(['0:0', '2:0']);
+        });
+
+        it('does nothing when the cell does not exist', () => {
+            const grid = new OrthonormalGrid(3, 3);
+            expect(() => grid.destroyCell({ x: 7, y: 7 })).not.toThrow();
+            expect(linkedCoords(grid.getCell({ x: 1, y: 1 }))).toHaveLength(4);
+        });
+    });
+
     describe('without diagonals', () => {
         const grid = new OrthonormalGrid(3, 3);
 
