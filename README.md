@@ -154,8 +154,41 @@ If you lower a link cost below the distance between its two cells (1, or √2 di
 | `npm run lint`       | Lints with ESLint (typescript-eslint).                   |
 | `npm run typecheck`  | Type-checks sources and tests.                           |
 | `npm run format`     | Formats with Prettier.                                   |
+| `npm run check`      | Runs all of the above at once: the release gate.         |
 
-`npm publish` runs lint, type-check, tests and build first (`prepublishOnly`).
+`npm run check` is what CI runs on every push and pull request, and what `npm publish` runs
+first through `prepublishOnly`.
+
+## Releasing
+
+Publishing is automated: pushing a GitHub release runs
+[`.github/workflows/publish.yml`](.github/workflows/publish.yml), which builds the package and
+stages it on npm.
+
+1. **Bump the version** and push it, tag included:
+
+   ```bash
+   npm version patch   # or minor / major
+   git push --follow-tags
+   ```
+
+2. **Create the GitHub release** on that tag (`gh release create v1.2.3 --generate-notes`, or
+   the website). The workflow checks that the tag matches the version in `package.json` and
+   fails if they differ, then runs `npm run check` and `npm stage publish`.
+
+3. **Approve the staged version**, which is what actually puts it on npm:
+
+   ```bash
+   npm stage list @laboralphy/algorithms   # shows the pending version and its stage id
+   npm stage approve <stage-id>            # or npm stage reject <stage-id>
+   ```
+
+   You can also approve it from the package page on npmjs.com, and inspect the tarball first
+   with `npm stage download <stage-id>`.
+
+Staging is what lets CI publish without a long-lived npm token: the workflow authenticates
+through OIDC (npm trusted publishing), and the 2FA confirmation happens at approval time.
+It needs npm 12, which the workflow installs, since Node 24 still ships npm 11.
 
 ## License
 
