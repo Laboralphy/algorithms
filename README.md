@@ -1,4 +1,4 @@
-# @ralphy/algorithm
+# @laboralphy/algorithms
 
 A versioned home for reusable algorithms, usable from both TypeScript and JavaScript
 (ES modules and CommonJS), with bundled type declarations.
@@ -6,19 +6,19 @@ A versioned home for reusable algorithms, usable from both TypeScript and JavaSc
 ## Installation
 
 ```bash
-npm install @ralphy/algorithm
+npm install @laboralphy/algorithms
 ```
 
 ## Usage
 
 ```ts
 // ES modules / TypeScript
-import { AStar, Bresenham, OrthonormalGrid, Perlin } from '@ralphy/algorithm';
+import { AStar, Bresenham, OrthonormalGrid, Perlin } from '@laboralphy/algorithms';
 ```
 
 ```js
 // CommonJS
-const { AStar, Bresenham, OrthonormalGrid, Perlin } = require('@ralphy/algorithm');
+const { AStar, Bresenham, OrthonormalGrid, Perlin } = require('@laboralphy/algorithms');
 ```
 
 ## Algorithms
@@ -38,7 +38,7 @@ line was walked, `false` if the callback stopped it.
 // Collect the cells of a line
 const cells: [number, number][] = [];
 Bresenham.line(0, 0, 4, 2, (x, y) => {
-    cells.push([x, y]);
+  cells.push([x, y]);
 });
 // [[0,0],[1,0],[2,1],[3,1],[4,2]]
 
@@ -63,7 +63,7 @@ seamlessly.
 ```ts
 const size = 64;
 const base = Array.from({ length: size }, () =>
-    Float32Array.from({ length: size }, () => Math.random()),
+  Float32Array.from({ length: size }, () => Math.random()),
 );
 const noise = Perlin.generate(base, Perlin.computeOptimalOctaves(size));
 const colors = Perlin.colorize(noise, ['#004', '#08f', '#fe8', '#4a4', '#fff']);
