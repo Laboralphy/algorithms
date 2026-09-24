@@ -13,12 +13,18 @@ npm install @laboralphy/algorithms
 
 ```ts
 // ES modules / TypeScript
-import { AStar, Bresenham, OrthonormalGrid, Perlin } from '@laboralphy/algorithms';
+import { AStar, Bresenham, FractalNoise, OrthonormalGrid, Perlin } from '@laboralphy/algorithms';
 ```
 
 ```js
 // CommonJS
-const { AStar, Bresenham, OrthonormalGrid, Perlin } = require('@laboralphy/algorithms');
+const {
+  AStar,
+  Bresenham,
+  FractalNoise,
+  OrthonormalGrid,
+  Perlin,
+} = require('@laboralphy/algorithms');
 ```
 
 ## Algorithms
@@ -67,6 +73,31 @@ const base = Array.from({ length: size }, () =>
 );
 const noise = Perlin.generate(base, Perlin.computeOptimalOctaves(size));
 const colors = Perlin.colorize(noise, ['#004', '#08f', '#fe8', '#4a4', '#fff']);
+```
+
+### `FractalNoise`
+
+Seeded, tileable fractal value noise that can be sampled at any point. Coordinates are in
+**tile units**: the noise repeats every 1 on both axes, so the same noise can be rendered at
+any pixel size (including non power-of-two sizes) and keeps its features, only larger or
+smaller.
+
+| Option        | Default | Description                                                                    |
+| ------------- | ------- | ------------------------------------------------------------------------------ |
+| `seed`        | `0`     | Same seed, same noise.                                                         |
+| `period`      | `4`     | Lattice cells across one tile at the first octave (`n` or `[x, y]`, integers). |
+| `octaves`     | `4`     | Number of octaves; each one doubles the frequency.                             |
+| `persistence` | `0.5`   | Weight ratio between an octave and the previous one, in `(0, 1]`.              |
+
+| Method                  | Description                                                   |
+| ----------------------- | ------------------------------------------------------------- |
+| `sample(u, v)`          | Noise value in `[0, 1)` at a point, in tile units.            |
+| `render(width, height)` | One tile as a grid of rows (`grid[y][x]`), tiling seamlessly. |
+
+```ts
+const noise = new FractalNoise({ seed: 42, period: 4, octaves: 5, persistence: 0.6 });
+const grid = noise.render(64, 64);
+const same = noise.render(128, 128); // same features, twice as large
 ```
 
 ### `AStar`
