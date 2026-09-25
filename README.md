@@ -13,7 +13,14 @@ npm install @laboralphy/algorithms
 
 ```ts
 // ES modules / TypeScript
-import { AStar, Bresenham, FractalNoise, OrthonormalGrid, Perlin } from '@laboralphy/algorithms';
+import {
+  AStar,
+  Bresenham,
+  FractalNoise,
+  OrthonormalGrid,
+  Perlin,
+  Voronoi,
+} from '@laboralphy/algorithms';
 ```
 
 ```js
@@ -98,6 +105,38 @@ smaller.
 const noise = new FractalNoise({ seed: 42, period: 4, octaves: 5, persistence: 0.6 });
 const grid = noise.render(64, 64);
 const same = noise.render(128, 128); // same features, twice as large
+```
+
+### `Voronoi`
+
+Seeded, tileable Voronoi diagram, with the **exact** perpendicular distance to the cell
+borders. Cell centers lie on a jittered grid, and the diagram is computed on a torus:
+distances wrap around the tile, so cells crossing an edge continue on the opposite one and
+the diagram tiles seamlessly. It has no memory: centers are derived from the seed.
+
+| Option    | Default | Description                                                                 |
+| --------- | ------- | --------------------------------------------------------------------------- |
+| `seed`    | `0`     | Same seed, same diagram.                                                    |
+| `size`    | —       | `[width, height]` of the tile, in your units; distances are in these units. |
+| `cells`   | —       | Cells across the tile: `n` or `[columns, rows]`, positive integers.         |
+| `jitter`  | `1`     | How far centers move inside their grid cell: `0` is a regular grid.         |
+| `stagger` | `0`     | Shift of every other row, in cells; `0.5` with no jitter gives hexagons.    |
+
+| Method                  | Description                                                            |
+| ----------------------- | ---------------------------------------------------------------------- |
+| `sample(x, y)`          | `{ cell, center, distance, border, neighbor }` at a point (see below). |
+| `render(width, height)` | Grids of cell ids, distances and borders, sampled at pixel centers.    |
+
+A sample gives the `cell` holding the point (a stable id, `row * columns + column`), its
+`center`, the `distance` to that center, the `border` distance to the nearest cell border,
+and the `neighbor` cell across that border. The border distance is the distance to the
+nearest bisector, not the usual `(F2 − F1) / 2` approximation: joints drawn with
+`border < width / 2` have a constant width.
+
+```ts
+const voronoi = new Voronoi({ seed: 42, size: [64, 64], cells: 5, jitter: 0.8 });
+const { cell, border } = voronoi.sample(10.5, 20.5);
+const isJoint = border < 1; // a joint 2 units wide
 ```
 
 ### `AStar`

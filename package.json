@@ -1,6 +1,6 @@
 {
   "name": "@laboralphy/algorithms",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "A collection of reusable algorithms (Bresenham line, Perlin noise, ...) for TypeScript and JavaScript.",
   "author": {
     "name": "Raphaël Marandet",
@@ -39,6 +39,7 @@
     "bresenham",
     "perlin",
     "noise",
+    "voronoi",
     "typescript"
   ],
   "engines": {
